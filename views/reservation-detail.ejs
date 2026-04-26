@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Détails de la Réservation</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <div class="nav-brand">Catway Manager</div>
+      <div class="nav-links">
+        <a href="/">Accueil</a>
+        <% if (user) { %>
+          <a href="/dashboard">Tableau de bord</a>
+        <% } %>
+        <a href="/reservations">Réservations</a>
+        <a href="/documentation">Documentation</a>
+        <% if (user) { %>
+          <a href="/logout">Déconnexion</a>
+        <% } %>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>Détails de la Réservation #<%= reservation.id %></h1>
+
+    <div class="detail-card">
+      <div class="detail-row">
+        <label>ID:</label>
+        <value><%= reservation.id %></value>
+      </div>
+      <div class="detail-row">
+        <label>ID du Catway:</label>
+        <value><a href="/catways/<%= reservation.catwayId %>"><%= reservation.catwayId %></a></value>
+      </div>
+      <div class="detail-row">
+        <label>Nom du Client:</label>
+        <value><%= reservation.clientName %></value>
+      </div>
+      <div class="detail-row">
+        <label>Email du Client:</label>
+        <value><%= reservation.clientEmail %></value>
+      </div>
+      <div class="detail-row">
+        <label>Date de Début:</label>
+        <value><%= new Date(reservation.startDate).toLocaleString('fr-FR') %></value>
+      </div>
+      <div class="detail-row">
+        <label>Date de Fin:</label>
+        <value><%= new Date(reservation.endDate).toLocaleString('fr-FR') %></value>
+      </div>
+      <% if (reservation.createdAt) { %>
+        <div class="detail-row">
+          <label>Créée le:</label>
+          <value><%= new Date(reservation.createdAt).toLocaleString('fr-FR') %></value>
+        </div>
+      <% } %>
+      <% if (reservation.updatedAt) { %>
+        <div class="detail-row">
+          <label>Modifiée le:</label>
+          <value><%= new Date(reservation.updatedAt).toLocaleString('fr-FR') %></value>
+        </div>
+      <% } %>
+    </div>
+
+    <div class="back-link">
+      <a href="/reservations">Retour à la liste</a>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2026 Système de Gestion de Catways. Tous droits réservés.</p>
+  </footer>
+</body>
+</html>

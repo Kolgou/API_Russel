@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Liste des Catways</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <div class="nav-brand">Catway Manager</div>
+      <div class="nav-links">
+        <a href="/">Accueil</a>
+        <% if (user) { %>
+          <a href="/dashboard">Tableau de bord</a>
+        <% } %>
+        <a href="/documentation">Documentation</a>
+        <% if (user) { %>
+          <a href="/logout">Déconnexion</a>
+        <% } %>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>Liste des Catways</h1>
+
+    <% if (error) { %>
+      <div class="alert alert-error"><%= error %></div>
+    <% } %>
+
+    <% if (catways && catways.length > 0) { %>
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Numéro</th>
+              <th>État</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% catways.forEach(catway => { %>
+              <tr>
+                <td><%= catway.id %></td>
+                <td><%= catway.number %></td>
+                <td><span class="badge badge-<%= catway.status %>"><%= catway.status %></span></td>
+                <td>
+                  <a href="/catways/<%= catway.id %>" class="btn btn-small btn-info">Détails</a>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <p class="empty-message">Aucun catway disponible.</p>
+    <% } %>
+
+    <div class="back-link">
+      <% if (user) { %>
+        <a href="/dashboard">Retour au tableau de bord</a>
+      <% } else { %>
+        <a href="/">Accueil</a>
+      <% } %>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2026 Système de Gestion de Catways. Tous droits réservés.</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Liste des Réservations</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <div class="nav-brand">Catway Manager</div>
+      <div class="nav-links">
+        <a href="/">Accueil</a>
+        <% if (user) { %>
+          <a href="/dashboard">Tableau de bord</a>
+        <% } %>
+        <a href="/documentation">Documentation</a>
+        <% if (user) { %>
+          <a href="/logout">Déconnexion</a>
+        <% } %>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>Liste des Réservations</h1>
+
+    <% if (error) { %>
+      <div class="alert alert-error"><%= error %></div>
+    <% } %>
+
+    <% if (reservations && reservations.length > 0) { %>
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Catway</th>
+              <th>Client</th>
+              <th>Date Début</th>
+              <th>Date Fin</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% reservations.forEach(reservation => { %>
+              <tr>
+                <td><%= reservation.id %></td>
+                <td><%= reservation.catwayId %></td>
+                <td><%= reservation.clientName %></td>
+                <td><%= new Date(reservation.startDate).toLocaleDateString('fr-FR') %></td>
+                <td><%= new Date(reservation.endDate).toLocaleDateString('fr-FR') %></td>
+                <td>
+                  <a href="/reservations/<%= reservation.id %>" class="btn btn-small btn-info">Détails</a>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <p class="empty-message">Aucune réservation disponible.</p>
+    <% } %>
+
+    <div class="back-link">
+      <% if (user) { %>
+        <a href="/dashboard">Retour au tableau de bord</a>
+      <% } else { %>
+        <a href="/">Accueil</a>
+      <% } %>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2026 Système de Gestion de Catways. Tous droits réservés.</p>
+  </footer>
+</body>
+</html>

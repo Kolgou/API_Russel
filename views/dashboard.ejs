@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tableau de Bord</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <div class="nav-brand">Catway Manager</div>
+      <div class="nav-links">
+        <a href="/catways">Catways</a>
+        <a href="/reservations">Réservations</a>
+        <a href="/documentation">Documentation</a>
+        <a href="/logout">Déconnexion (<%= user.username %>)</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>Tableau de Bord</h1>
+
+    <% if (message) { %>
+      <div class="alert alert-success"><%= message %></div>
+    <% } %>
+    <% if (error) { %>
+      <div class="alert alert-error"><%= error %></div>
+    <% } %>
+
+    <div class="dashboard-grid">
+      <section class="dashboard-section">
+        <h2>Gestion des Utilisateurs</h2>
+
+        <div class="form-card">
+          <h3>Créer un Utilisateur</h3>
+          <form method="POST" action="/dashboard/users" class="form">
+            <div class="form-group">
+              <label for="create-username">Nom d'utilisateur:</label>
+              <input type="text" id="create-username" name="username" required>
+            </div>
+            <div class="form-group">
+              <label for="create-email">Email:</label>
+              <input type="email" id="create-email" name="email" required>
+            </div>
+            <div class="form-group">
+              <label for="create-password">Mot de passe:</label>
+              <input type="password" id="create-password" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-success">Créer</button>
+          </form>
+        </div>
+
+        <div class="form-card">
+          <h3>Modifier un Utilisateur</h3>
+          <form method="POST" action="/dashboard/users/<%= user.id %>" class="form">
+            <div class="form-group">
+              <label for="update-username">Nom d'utilisateur:</label>
+              <input type="text" id="update-username" name="username" required>
+            </div>
+            <div class="form-group">
+              <label for="update-email">Email:</label>
+              <input type="email" id="update-email" name="email" required>
+            </div>
+            <button type="submit" class="btn btn-warning">Modifier</button>
+          </form>
+        </div>
+
+        <div class="form-card">
+          <h3>Supprimer un Utilisateur</h3>
+          <form method="POST" action="/dashboard/users/<%= user.id %>/delete" class="form" onsubmit="return confirm('Êtes-vous sûr?');">
+            <div class="form-group">
+              <label for="delete-id">ID de l'utilisateur:</label>
+              <input type="text" id="delete-id" placeholder="ex: 1" required>
+            </div>
+            <button type="submit" class="btn btn-danger">Supprimer</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="dashboard-section">
+        <h2>Gestion des Catways</h2>
+
+        <div class="form-card">
+          <h3>Créer un Catway</h3>
+          <form method="POST" action="/dashboard/catways" class="form">
+            <div class="form-group">
+              <label for="catway-number">Numéro du Catway:</label>
+              <input type="text" id="catway-number" name="number" required>
+            </div>
+            <div class="form-group">
+              <label for="catway-status">État:</label>
+              <select id="catway-status" name="status" required>
+                <option value="disponible">Disponible</option>
+                <option value="occupé">Occupé</option>
+                <option value="maintenance">Maintenance</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-success">Créer</button>
+          </form>
+        </div>
+
+        <div class="form-card">
+          <h3>Modifier l'État d'un Catway</h3>
+          <form method="POST" action="/dashboard/catways/1" class="form">
+            <div class="form-group">
+              <label for="update-catway-id">ID du Catway:</label>
+              <input type="number" id="update-catway-id" placeholder="ID" required>
+            </div>
+            <div class="form-group">
+              <label for="update-catway-status">Nouvel État:</label>
+              <select id="update-catway-status" name="status" required>
+                <option value="disponible">Disponible</option>
+                <option value="occupé">Occupé</option>
+                <option value="maintenance">Maintenance</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-warning">Modifier</button>
+          </form>
+        </div>
+
+        <div class="form-card">
+          <h3>Supprimer un Catway</h3>
+          <form method="POST" action="/dashboard/catways/1/delete" class="form" onsubmit="return confirm('Êtes-vous sûr?');">
+            <div class="form-group">
+              <label for="delete-catway-id">ID du Catway:</label>
+              <input type="number" id="delete-catway-id" placeholder="ID" required>
+            </div>
+            <button type="submit" class="btn btn-danger">Supprimer</button>
+          </form>
+        </div>
+
+        <div class="form-card">
+          <h3>Afficher les Détails d'un Catway</h3>
+          <form method="GET" action="/dashboard/catway/1" class="form">
+            <div class="form-group">
+              <label for="detail-catway-id">ID du Catway:</label>
+              <input type="number" id="detail-catway-id" placeholder="ID" required>
+            </div>
+            <button type="submit" class="btn btn-info">Afficher</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="dashboard-section">
+        <h2>Gestion des Réservations</h2>
+
+        <div class="form-card">
+          <h3>Créer une Réservation</h3>
+          <form method="POST" action="/dashboard/reservations" class="form">
+            <div class="form-group">
+              <label for="catway-id">ID du Catway:</label>
+              <input type="number" id="catway-id" name="catwayId" required>
+            </div>
+            <div class="form-group">
+              <label for="client-name">Nom du Client:</label>
+              <input type="text" id="client-name" name="clientName" required>
+            </div>
+            <div class="form-group">
+              <label for="client-email">Email du Client:</label>
+              <input type="email" id="client-email" name="clientEmail" required>
+            </div>
+            <div class="form-group">
+              <label for="start-date">Date de Début:</label>
+              <input type="date" id="start-date" name="startDate" required>
+            </div>
+            <div class="form-group">
+              <label for="end-date">Date de Fin:</label>
+              <input type="date" id="end-date" name="endDate" required>
+            </div>
+            <button type="submit" class="btn btn-success">Créer</button>
+          </form>
+        </div>
+
+        <div class="form-card">
+          <h3>Supprimer une Réservation</h3>
+          <form method="POST" action="/dashboard/reservations/1/delete" class="form" onsubmit="return confirm('Êtes-vous sûr?');">
+            <div class="form-group">
+              <label for="delete-reservation-id">ID de la Réservation:</label>
+              <input type="number" id="delete-reservation-id" placeholder="ID" required>
+            </div>
+            <button type="submit" class="btn btn-danger">Supprimer</button>
+          </form>
+        </div>
+
+        <div class="form-card">
+          <h3>Afficher les Détails d'une Réservation</h3>
+          <form method="GET" action="/dashboard/reservation/1" class="form">
+            <div class="form-group">
+              <label for="detail-reservation-id">ID de la Réservation:</label>
+              <input type="number" id="detail-reservation-id" placeholder="ID" required>
+            </div>
+            <button type="submit" class="btn btn-info">Afficher</button>
+          </form>
+        </div>
+      </section>
+    </div>
+
+    <div class="quick-links">
+      <a href="/catways" class="btn btn-primary">Voir tous les Catways</a>
+      <a href="/reservations" class="btn btn-primary">Voir toutes les Réservations</a>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2026 Système de Gestion de Catways. Tous droits réservés.</p>
+  </footer>
+</body>
+</html>

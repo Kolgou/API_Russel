@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentation API</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <div class="nav-brand">Catway Manager</div>
+      <div class="nav-links">
+        <a href="/">Accueil</a>
+        <% if (user) { %>
+          <a href="/dashboard">Tableau de bord</a>
+        <% } %>
+        <a href="/catways">Catways</a>
+        <a href="/reservations">Réservations</a>
+        <% if (user) { %>
+          <a href="/logout">Déconnexion</a>
+        <% } %>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>Documentation de l'API</h1>
+
+    <div class="doc-section">
+      <h2>Introduction</h2>
+      <p>L'API de gestion de catways et réservations fournit des endpoints REST pour gérer les utilisateurs, catways et réservations.</p>
+      <p><strong>URL de base:</strong> <code>http://localhost:5000</code></p>
+    </div>
+
+    <div class="doc-section">
+      <h2>Authentification</h2>
+      <p>Les requêtes API doivent inclure un token d'authentification dans l'en-tête <code>Authorization</code>.</p>
+    </div>
+
+    <div class="doc-section">
+      <h2>Utilisateurs (Users)</h2>
+
+      <h3>GET /users</h3>
+      <p>Récupère la liste de tous les utilisateurs.</p>
+      <p><strong>Réponse:</strong></p>
+      <pre><code>[
+  {
+    "id": 1,
+    "username": "john_doe",
+    "email": "john@example.com",
+    "createdAt": "2026-01-24T10:00:00Z",
+    "updatedAt": "2026-01-24T10:00:00Z"
+  }
+]</code></pre>
+
+      <h3>GET /users/:id</h3>
+      <p>Récupère les détails d'un utilisateur spécifique.</p>
+
+      <h3>POST /users</h3>
+      <p>Crée un nouvel utilisateur.</p>
+      <p><strong>Paramètres:</strong></p>
+      <pre><code>{
+  "username": "john_doe",
+  "email": "john@example.com",
+  "password": "securepassword"
+}</code></pre>
+
+      <h3>PUT /users/:id</h3>
+      <p>Modifie un utilisateur existant.</p>
+      <p><strong>Paramètres:</strong></p>
+      <pre><code>{
+  "username": "new_username",
+  "email": "newemail@example.com"
+}</code></pre>
+
+      <h3>DELETE /users/:id</h3>
+      <p>Supprime un utilisateur.</p>
+    </div>
+
+    <div class="doc-section">
+      <h2>Catways</h2>
+
+      <h3>GET /catways</h3>
+      <p>Récupère la liste de tous les catways.</p>
+      <p><strong>Réponse:</strong></p>
+      <pre><code>[
+  {
+    "id": 1,
+    "number": "A1",
+    "status": "disponible",
+    "createdAt": "2026-01-24T10:00:00Z",
+    "updatedAt": "2026-01-24T10:00:00Z"
+  }
+]</code></pre>
+
+      <h3>GET /catways/:id</h3>
+      <p>Récupère les détails d'un catway spécifique.</p>
+
+      <h3>POST /catways</h3>
+      <p>Crée un nouveau catway.</p>
+      <p><strong>Paramètres:</strong></p>
+      <pre><code>{
+  "number": "A1",
+  "status": "disponible"
+}</code></pre>
+
+      <h3>PUT /catways/:id</h3>
+      <p>Modifie l'état d'un catway.</p>
+      <p><strong>Paramètres:</strong></p>
+      <pre><code>{
+  "status": "occupé"
+}</code></pre>
+      <p><strong>États valides:</strong> disponible, occupé, maintenance</p>
+
+      <h3>DELETE /catways/:id</h3>
+      <p>Supprime un catway.</p>
+    </div>
+
+    <div class="doc-section">
+      <h2>Réservations (Reservations)</h2>
+
+      <h3>GET /reservations</h3>
+      <p>Récupère la liste de toutes les réservations.</p>
+      <p><strong>Réponse:</strong></p>
+      <pre><code>[
+  {
+    "id": 1,
+    "catwayId": 1,
+    "clientName": "Jean Dupont",
+    "clientEmail": "jean@example.com",
+    "startDate": "2026-02-01T00:00:00Z",
+    "endDate": "2026-02-07T00:00:00Z",
+    "createdAt": "2026-01-24T10:00:00Z",
+    "updatedAt": "2026-01-24T10:00:00Z"
+  }
+]</code></pre>
+
+      <h3>GET /reservations/:id</h3>
+      <p>Récupère les détails d'une réservation spécifique.</p>
+
+      <h3>POST /reservations</h3>
+      <p>Crée une nouvelle réservation.</p>
+      <p><strong>Paramètres:</strong></p>
+      <pre><code>{
+  "catwayId": 1,
+  "clientName": "Jean Dupont",
+  "clientEmail": "jean@example.com",
+  "startDate": "2026-02-01",
+  "endDate": "2026-02-07"
+}</code></pre>
+
+      <h3>DELETE /reservations/:id</h3>
+      <p>Supprime une réservation.</p>
+    </div>
+
+    <div class="doc-section">
+      <h2>Codes de Réponse</h2>
+      <ul>
+        <li><strong>200</strong> - Succès</li>
+        <li><strong>201</strong> - Créé avec succès</li>
+        <li><strong>400</strong> - Requête invalide</li>
+        <li><strong>401</strong> - Non authentifié</li>
+        <li><strong>404</strong> - Non trouvé</li>
+        <li><strong>500</strong> - Erreur serveur</li>
+      </ul>
+    </div>
+
+    <div class="back-link">
+      <a href="/">Retour à l'accueil</a>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2026 Système de Gestion de Catways. Tous droits réservés.</p>
+  </footer>
+</body>
+</html>
