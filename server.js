@@ -1,14 +1,57 @@
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const API_PORT = process.env.API_PORT || 5000;
+const API_KEY = process.env.API_KEY || 'dev-api-key';
 
-// In-memory API store so the web app can run without an external backend.
+const CATWAYS_FILE = path.join(__dirname, 'public', 'json', 'catways.json');
+const RESERVATIONS_FILE = path.join(__dirname, 'public', 'json', 'reservations.json');
+
 const nowIso = () => new Date().toISOString();
+
+const readJsonArray = (filePath) => {
+  try {
+    const parsed = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.error(`Impossible de lire ${filePath}:`, error.message);
+    return [];
+  }
+};
+
+const writeJsonArray = (filePath, collection) => {
+  fs.writeFileSync(filePath, JSON.stringify(collection, null, 2), 'utf-8');
+};
+
+const ensureReservationIds = (reservations) => {
+  let changed = false;
+  const normalized = reservations.map((reservation, index) => {
+    if (reservation.idReservation !== undefined && reservation.idReservation !== null) {
+      return reservation;
+    }
+
+    changed = true;
+    return {
+      ...reservation,
+      idReservation: index + 1
+    };
+  });
+
+  return { normalized, changed };
+};
+
+const loadedReservations = readJsonArray(RESERVATIONS_FILE);
+const reservationsWithIds = ensureReservationIds(loadedReservations);
+
+if (reservationsWithIds.changed) {
+  writeJsonArray(RESERVATIONS_FILE, reservationsWithIds.normalized);
+}
+
 const db = {
   users: [
     {
@@ -20,16 +63,8 @@ const db = {
       updatedAt: nowIso()
     }
   ],
-  catways: [
-    {
-      id: 1,
-      number: 'A1',
-      status: 'disponible',
-      createdAt: nowIso(),
-      updatedAt: nowIso()
-    }
-  ],
-  reservations: []
+  catways: readJsonArray(CATWAYS_FILE),
+  reservations: reservationsWithIds.normalized
 };
 
 const nextId = (collection) => {
@@ -38,6 +73,31 @@ const nextId = (collection) => {
 };
 
 const findById = (collection, id) => collection.find((item) => String(item.id) === String(id));
+const findCatway = (catwayNumber) => db.catways.find((item) => Number(item.catwayNumber) === Number(catwayNumber));
+const findReservation = (idReservation) => db.reservations.find((item) => Number(item.idReservation) === Number(idReservation));
+
+const saveCatways = () => writeJsonArray(CATWAYS_FILE, db.catways);
+const saveReservations = () => writeJsonArray(RESERVATIONS_FILE, db.reservations);
+
+const isValidCatwayType = (value) => value === 'long' || value === 'short';
+
+const requireApiKey = (req, res, next) => {
+  if (req.header('x-api-key') === API_KEY) {
+    next();
+    return;
+  }
+
+  res.status(401).json({ error: 'Clé API invalide' });
+};
+
+const validateReservationDates = (checkIn, checkOut) => {
+  const start = new Date(checkIn);
+  const end = new Date(checkOut);
+  if (Number.isNaN(start.valueOf()) || Number.isNaN(end.valueOf())) {
+    return false;
+  }
+  return start <= end;
+};
 
 const api = express();
 api.use(express.json());
@@ -58,7 +118,7 @@ api.get('/users/:id', (req, res) => {
   res.json(safeUser);
 });
 
-api.post('/users', (req, res) => {
+api.post('/users', requireApiKey, (req, res) => {
   const { username, email, password } = req.body;
   if (!username || !email || !password) {
     return res.status(400).json({ error: 'username, email et password sont requis' });
@@ -83,7 +143,7 @@ api.post('/users', (req, res) => {
   res.status(201).json(safeUser);
 });
 
-api.put('/users/:id', (req, res) => {
+api.put('/users/:id', requireApiKey, (req, res) => {
   const { username, email } = req.body;
   const user = findById(db.users, req.params.id);
   if (!user) {
@@ -98,7 +158,7 @@ api.put('/users/:id', (req, res) => {
   res.json(safeUser);
 });
 
-api.delete('/users/:id', (req, res) => {
+api.delete('/users/:id', requireApiKey, (req, res) => {
   const index = db.users.findIndex((u) => String(u.id) === String(req.params.id));
   if (index === -1) {
     return res.status(404).json({ error: 'Utilisateur non trouvé' });
@@ -109,105 +169,209 @@ api.delete('/users/:id', (req, res) => {
 });
 
 api.get('/catways', (req, res) => {
-  res.json(db.catways);
+  const catways = [...db.catways].sort((a, b) => Number(a.catwayNumber) - Number(b.catwayNumber));
+  res.json(catways);
 });
 
 api.get('/catways/:id', (req, res) => {
-  const catway = findById(db.catways, req.params.id);
+  const catway = findCatway(req.params.id);
   if (!catway) {
     return res.status(404).json({ error: 'Catway non trouvé' });
   }
   res.json(catway);
 });
 
-api.post('/catways', (req, res) => {
-  const { number, status } = req.body;
-  if (!number || !status) {
-    return res.status(400).json({ error: 'number et status sont requis' });
+api.post('/catways', requireApiKey, (req, res) => {
+  const { catwayNumber, type, catwayState } = req.body;
+  if (catwayNumber === undefined || !type || !catwayState) {
+    return res.status(400).json({ error: 'catwayNumber, type et catwayState sont requis' });
+  }
+
+  if (!isValidCatwayType(type)) {
+    return res.status(400).json({ error: 'type doit être long ou short' });
+  }
+
+  if (findCatway(catwayNumber)) {
+    return res.status(409).json({ error: 'Ce catway existe déjà' });
   }
 
   const catway = {
-    id: nextId(db.catways),
-    number,
-    status,
+    catwayNumber: Number(catwayNumber),
+    type,
+    catwayState,
     createdAt: nowIso(),
     updatedAt: nowIso()
   };
 
   db.catways.push(catway);
+  saveCatways();
   res.status(201).json(catway);
 });
 
-api.put('/catways/:id', (req, res) => {
-  const { status } = req.body;
-  const catway = findById(db.catways, req.params.id);
+api.put('/catways/:id', requireApiKey, (req, res) => {
+  const { type, catwayState } = req.body;
+  const catway = findCatway(req.params.id);
   if (!catway) {
     return res.status(404).json({ error: 'Catway non trouvé' });
   }
 
-  if (status) catway.status = status;
+  if (!type || !catwayState) {
+    return res.status(400).json({ error: 'type et catwayState sont requis pour un PUT' });
+  }
+
+  if (!isValidCatwayType(type)) {
+    return res.status(400).json({ error: 'type doit être long ou short' });
+  }
+
+  catway.type = type;
+  catway.catwayState = catwayState;
   catway.updatedAt = nowIso();
+  saveCatways();
   res.json(catway);
 });
 
-api.delete('/catways/:id', (req, res) => {
-  const index = db.catways.findIndex((c) => String(c.id) === String(req.params.id));
+api.patch('/catways/:id', requireApiKey, (req, res) => {
+  const { type, catwayState } = req.body;
+  const catway = findCatway(req.params.id);
+  if (!catway) {
+    return res.status(404).json({ error: 'Catway non trouvé' });
+  }
+
+  if (type !== undefined) {
+    if (!isValidCatwayType(type)) {
+      return res.status(400).json({ error: 'type doit être long ou short' });
+    }
+    catway.type = type;
+  }
+
+  if (catwayState !== undefined) {
+    catway.catwayState = catwayState;
+  }
+
+  catway.updatedAt = nowIso();
+  saveCatways();
+  res.json(catway);
+});
+
+api.delete('/catways/:id', requireApiKey, (req, res) => {
+  const catwayNumber = Number(req.params.id);
+  const index = db.catways.findIndex((c) => Number(c.catwayNumber) === catwayNumber);
   if (index === -1) {
     return res.status(404).json({ error: 'Catway non trouvé' });
   }
 
-  const catwayId = String(req.params.id);
   db.catways.splice(index, 1);
-  db.reservations = db.reservations.filter((r) => String(r.catwayId) !== catwayId);
+  db.reservations = db.reservations.filter((r) => Number(r.catwayNumber) !== catwayNumber);
+
+  saveCatways();
+  saveReservations();
 
   res.status(204).send();
 });
 
-api.get('/reservations', (req, res) => {
-  res.json(db.reservations);
+api.get('/catways/:id/reservations', (req, res) => {
+  const catway = findCatway(req.params.id);
+  if (!catway) {
+    return res.status(404).json({ error: 'Catway non trouvé' });
+  }
+
+  const reservations = db.reservations.filter((item) => Number(item.catwayNumber) === Number(req.params.id));
+  res.json(reservations);
 });
 
-api.get('/reservations/:id', (req, res) => {
-  const reservation = findById(db.reservations, req.params.id);
+const getSingleNestedReservation = (req, res) => {
+  const catway = findCatway(req.params.id);
+  if (!catway) {
+    return res.status(404).json({ error: 'Catway non trouvé' });
+  }
+
+  const reservation = db.reservations.find(
+    (item) => Number(item.catwayNumber) === Number(req.params.id) && Number(item.idReservation) === Number(req.params.idReservation)
+  );
+
+  if (!reservation) {
+    return res.status(404).json({ error: 'Réservation non trouvée pour ce catway' });
+  }
+
+  res.json(reservation);
+};
+
+api.get('/catways/:id/reservations/:idReservation', getSingleNestedReservation);
+api.get('/catway/:id/reservations/:idReservation', getSingleNestedReservation);
+
+api.post('/catways/:id/reservations', requireApiKey, (req, res) => {
+  const catway = findCatway(req.params.id);
+  if (!catway) {
+    return res.status(404).json({ error: 'Catway non trouvé' });
+  }
+
+  const { clientName, boatName, checkIn, checkOut } = req.body;
+  if (!clientName || !boatName || !checkIn || !checkOut) {
+    return res.status(400).json({ error: 'clientName, boatName, checkIn et checkOut sont requis' });
+  }
+
+  if (!validateReservationDates(checkIn, checkOut)) {
+    return res.status(400).json({ error: 'Les dates checkIn/checkOut sont invalides' });
+  }
+
+  const reservation = {
+    idReservation: nextId(db.reservations.map((r) => ({ id: r.idReservation }))),
+    catwayNumber: Number(req.params.id),
+    clientName,
+    boatName,
+    checkIn,
+    checkOut,
+    createdAt: nowIso(),
+    updatedAt: nowIso()
+  };
+
+  db.reservations.push(reservation);
+  saveReservations();
+  res.status(201).json(reservation);
+});
+
+const deleteNestedReservation = (req, res) => {
+  const catway = findCatway(req.params.id);
+  if (!catway) {
+    return res.status(404).json({ error: 'Catway non trouvé' });
+  }
+
+  const index = db.reservations.findIndex(
+    (item) => Number(item.catwayNumber) === Number(req.params.id) && Number(item.idReservation) === Number(req.params.idReservation)
+  );
+
+  if (index === -1) {
+    return res.status(404).json({ error: 'Réservation non trouvée pour ce catway' });
+  }
+
+  db.reservations.splice(index, 1);
+  saveReservations();
+  res.status(204).send();
+};
+
+api.delete('/catways/:id/reservations/:idReservation', requireApiKey, deleteNestedReservation);
+api.delete('/catway/:id/reservations/:idReservation', requireApiKey, deleteNestedReservation);
+
+api.get('/reservations', (req, res) => {
+  res.json([...db.reservations].sort((a, b) => Number(a.idReservation) - Number(b.idReservation)));
+});
+
+api.get('/reservations/:idReservation', (req, res) => {
+  const reservation = findReservation(req.params.idReservation);
   if (!reservation) {
     return res.status(404).json({ error: 'Réservation non trouvée' });
   }
   res.json(reservation);
 });
 
-api.post('/reservations', (req, res) => {
-  const { catwayId, clientName, clientEmail, startDate, endDate } = req.body;
-  if (!catwayId || !clientName || !clientEmail || !startDate || !endDate) {
-    return res.status(400).json({ error: 'Tous les champs sont requis' });
-  }
-
-  const catway = findById(db.catways, catwayId);
-  if (!catway) {
-    return res.status(404).json({ error: 'Catway non trouvé' });
-  }
-
-  const reservation = {
-    id: nextId(db.reservations),
-    catwayId: Number(catwayId),
-    clientName,
-    clientEmail,
-    startDate,
-    endDate,
-    createdAt: nowIso(),
-    updatedAt: nowIso()
-  };
-
-  db.reservations.push(reservation);
-  res.status(201).json(reservation);
-});
-
-api.delete('/reservations/:id', (req, res) => {
-  const index = db.reservations.findIndex((r) => String(r.id) === String(req.params.id));
+api.delete('/reservations/:idReservation', requireApiKey, (req, res) => {
+  const index = db.reservations.findIndex((r) => Number(r.idReservation) === Number(req.params.idReservation));
   if (index === -1) {
     return res.status(404).json({ error: 'Réservation non trouvée' });
   }
 
   db.reservations.splice(index, 1);
+  saveReservations();
   res.status(204).send();
 });
 
@@ -268,8 +432,12 @@ app.use((req, res) => {
   res.status(404).render('404');
 });
 
-startServer(api, API_PORT, 'API', (runningPort) => {
-  process.env.API_BASE_URL = `http://localhost:${runningPort}`;
-  console.log(`API_BASE_URL actif: ${process.env.API_BASE_URL}`);
-});
-startServer(app, PORT, 'Serveur web');
+module.exports = { app, api, API_KEY };
+
+if (require.main === module) {
+  startServer(api, API_PORT, 'API', (runningPort) => {
+    process.env.API_BASE_URL = `http://localhost:${runningPort}`;
+    console.log(`API_BASE_URL actif: ${process.env.API_BASE_URL}`);
+  });
+  startServer(app, PORT, 'Serveur web');
+}

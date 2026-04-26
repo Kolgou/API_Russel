@@ -3,6 +3,9 @@ const router = express.Router();
 const axios = require('axios');
 
 const getApiBaseUrl = () => process.env.API_BASE_URL || 'http://localhost:5000';
+const getApiKey = () => process.env.API_KEY || 'dev-api-key';
+
+const authHeaders = () => ({ headers: { 'x-api-key': getApiKey() } });
 
 // GET Dashboard
 router.get('/', async (req, res) => {
@@ -35,7 +38,7 @@ router.post('/users', async (req, res) => {
   try {
     const apiBaseUrl = getApiBaseUrl();
     const { username, email, password } = req.body;
-    const response = await axios.post(`${apiBaseUrl}/users`, { username, email, password });
+    const response = await axios.post(`${apiBaseUrl}/users`, { username, email, password }, authHeaders());
     const userId = response.data.id;
     res.redirect('/dashboard?message=' + encodeURIComponent(`Utilisateur créé (ID: ${userId})`));
   } catch (error) {
@@ -47,7 +50,7 @@ router.post('/users/:id', async (req, res) => {
   try {
     const apiBaseUrl = getApiBaseUrl();
     const { username, email } = req.body;
-    await axios.put(`${apiBaseUrl}/users/${req.params.id}`, { username, email });
+    await axios.put(`${apiBaseUrl}/users/${req.params.id}`, { username, email }, authHeaders());
     res.redirect('/dashboard?message=Utilisateur modifié');
   } catch (error) {
     res.redirect('/dashboard?error=' + encodeURIComponent('Erreur modification utilisateur'));
@@ -57,7 +60,7 @@ router.post('/users/:id', async (req, res) => {
 router.post('/users/:id/delete', async (req, res) => {
   try {
     const apiBaseUrl = getApiBaseUrl();
-    await axios.delete(`${apiBaseUrl}/users/${req.params.id}`);
+    await axios.delete(`${apiBaseUrl}/users/${req.params.id}`, authHeaders());
     res.redirect('/dashboard?message=Utilisateur supprimé');
   } catch (error) {
     res.redirect('/dashboard?error=' + encodeURIComponent('Erreur suppression utilisateur'));
@@ -67,30 +70,30 @@ router.post('/users/:id/delete', async (req, res) => {
 router.post('/catways', async (req, res) => {
   try {
     const apiBaseUrl = getApiBaseUrl();
-    const { number, status } = req.body;
-    const response = await axios.post(`${apiBaseUrl}/catways`, { number, status });
-    const catwayId = response.data.id;
-    res.redirect('/dashboard?message=' + encodeURIComponent(`Catway créé (ID: ${catwayId})`));
+    const { catwayNumber, type, catwayState } = req.body;
+    await axios.post(`${apiBaseUrl}/catways`, { catwayNumber, type, catwayState }, authHeaders());
+    res.redirect('/dashboard?message=' + encodeURIComponent(`Catway créé (Numéro: ${catwayNumber})`));
   } catch (error) {
     res.redirect('/dashboard?error=' + encodeURIComponent('Erreur création catway'));
   }
 });
 
-router.post('/catways/:id', async (req, res) => {
+router.post('/catways/update', async (req, res) => {
   try {
     const apiBaseUrl = getApiBaseUrl();
-    const { status } = req.body;
-    await axios.put(`${apiBaseUrl}/catways/${req.params.id}`, { status });
+    const { catwayNumber, catwayState } = req.body;
+    await axios.patch(`${apiBaseUrl}/catways/${catwayNumber}`, { catwayState }, authHeaders());
     res.redirect('/dashboard?message=Catway modifié');
   } catch (error) {
     res.redirect('/dashboard?error=' + encodeURIComponent('Erreur modification catway'));
   }
 });
 
-router.post('/catways/:id/delete', async (req, res) => {
+router.post('/catways/delete', async (req, res) => {
   try {
     const apiBaseUrl = getApiBaseUrl();
-    await axios.delete(`${apiBaseUrl}/catways/${req.params.id}`);
+    const { catwayNumber } = req.body;
+    await axios.delete(`${apiBaseUrl}/catways/${catwayNumber}`, authHeaders());
     res.redirect('/dashboard?message=Catway supprimé');
   } catch (error) {
     res.redirect('/dashboard?error=' + encodeURIComponent('Erreur suppression catway'));
@@ -100,24 +103,24 @@ router.post('/catways/:id/delete', async (req, res) => {
 router.post('/reservations', async (req, res) => {
   try {
     const apiBaseUrl = getApiBaseUrl();
-    const { catwayId, clientName, clientEmail, startDate, endDate } = req.body;
-    await axios.post(`${apiBaseUrl}/reservations`, {
-      catwayId,
+    const { catwayNumber, clientName, boatName, checkIn, checkOut } = req.body;
+    await axios.post(`${apiBaseUrl}/catways/${catwayNumber}/reservations`, {
       clientName,
-      clientEmail,
-      startDate,
-      endDate
-    });
+      boatName,
+      checkIn,
+      checkOut
+    }, authHeaders());
     res.redirect('/dashboard?message=Réservation créée');
   } catch (error) {
     res.redirect('/dashboard?error=' + encodeURIComponent('Erreur création réservation'));
   }
 });
 
-router.post('/reservations/:id/delete', async (req, res) => {
+router.post('/reservations/delete', async (req, res) => {
   try {
     const apiBaseUrl = getApiBaseUrl();
-    await axios.delete(`${apiBaseUrl}/reservations/${req.params.id}`);
+    const { catwayNumber, idReservation } = req.body;
+    await axios.delete(`${apiBaseUrl}/catways/${catwayNumber}/reservations/${idReservation}`, authHeaders());
     res.redirect('/dashboard?message=Réservation supprimée');
   } catch (error) {
     res.redirect('/dashboard?error=' + encodeURIComponent('Erreur suppression réservation'));

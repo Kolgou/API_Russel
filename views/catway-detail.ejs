@@ -25,20 +25,20 @@
   </nav>
 
   <div class="container">
-    <h1>Détails du Catway #<%= catway.id %></h1>
+    <h1>Détails du Catway #<%= catway.catwayNumber %></h1>
 
     <div class="detail-card">
       <div class="detail-row">
-        <label>ID:</label>
-        <value><%= catway.id %></value>
+        <label>Numéro:</label>
+        <value><%= catway.catwayNumber %></value>
       </div>
       <div class="detail-row">
-        <label>Numéro:</label>
-        <value><%= catway.number %></value>
+        <label>Type:</label>
+        <value><%= catway.type %></value>
       </div>
       <div class="detail-row">
         <label>État:</label>
-        <value><span class="badge badge-<%= catway.status %>"><%= catway.status %></span></value>
+        <value><span class="badge"><%= catway.catwayState %></span></value>
       </div>
       <% if (catway.createdAt) { %>
         <div class="detail-row">

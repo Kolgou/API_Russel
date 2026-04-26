@@ -46,13 +46,13 @@
           <tbody>
             <% reservations.forEach(reservation => { %>
               <tr>
-                <td><%= reservation.id %></td>
-                <td><%= reservation.catwayId %></td>
+                <td><%= reservation.idReservation %></td>
+                <td><%= reservation.catwayNumber %></td>
                 <td><%= reservation.clientName %></td>
-                <td><%= new Date(reservation.startDate).toLocaleDateString('fr-FR') %></td>
-                <td><%= new Date(reservation.endDate).toLocaleDateString('fr-FR') %></td>
+                <td><%= new Date(reservation.checkIn).toLocaleDateString('fr-FR') %></td>
+                <td><%= new Date(reservation.checkOut).toLocaleDateString('fr-FR') %></td>
                 <td>
-                  <a href="/reservations/<%= reservation.id %>" class="btn btn-small btn-info">Détails</a>
+                  <a href="/reservations/<%= reservation.idReservation %>" class="btn btn-small btn-info">Détails</a>
                 </td>
               </tr>
             <% }); %>

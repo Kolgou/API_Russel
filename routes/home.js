@@ -7,18 +7,22 @@ router.get('/', (req, res) => {
 
 router.post('/login', (req, res) => {
   const { username, password } = req.body;
-  
-  if (username && password) {
-    req.session.user = { username, id: 1 };
-    res.redirect('/dashboard');
-  } else {
+
+  const isValidLogin = username === 'admin' && password === 'admin';
+
+  if (!isValidLogin) {
     res.render('home', { error: 'Identifiants invalides', user: req.session.user });
+    return;
   }
+
+  req.session.user = { username, id: 1 };
+  res.redirect('/dashboard');
 });
 
 router.get('/logout', (req, res) => {
-  req.session.destroy();
-  res.redirect('/');
+  req.session.destroy(() => {
+    res.redirect('/');
+  });
 });
 
 module.exports = router;

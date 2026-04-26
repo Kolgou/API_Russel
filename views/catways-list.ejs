@@ -35,8 +35,8 @@
         <table class="table">
           <thead>
             <tr>
-              <th>ID</th>
               <th>Numéro</th>
+              <th>Type</th>
               <th>État</th>
               <th>Actions</th>
             </tr>
@@ -44,11 +44,11 @@
           <tbody>
             <% catways.forEach(catway => { %>
               <tr>
-                <td><%= catway.id %></td>
-                <td><%= catway.number %></td>
-                <td><span class="badge badge-<%= catway.status %>"><%= catway.status %></span></td>
+                <td><%= catway.catwayNumber %></td>
+                <td><%= catway.type %></td>
+                <td><span class="badge"><%= catway.catwayState %></span></td>
                 <td>
-                  <a href="/catways/<%= catway.id %>" class="btn btn-small btn-info">Détails</a>
+                  <a href="/catways/<%= catway.catwayNumber %>" class="btn btn-small btn-info">Détails</a>
                 </td>
               </tr>
             <% }); %>

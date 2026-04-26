@@ -87,15 +87,18 @@
           <form method="POST" action="/dashboard/catways" class="form">
             <div class="form-group">
               <label for="catway-number">Numéro du Catway:</label>
-              <input type="text" id="catway-number" name="number" required>
+              <input type="number" id="catway-number" name="catwayNumber" min="1" required>
             </div>
             <div class="form-group">
-              <label for="catway-status">État:</label>
-              <select id="catway-status" name="status" required>
-                <option value="disponible">Disponible</option>
-                <option value="occupé">Occupé</option>
-                <option value="maintenance">Maintenance</option>
+              <label for="catway-type">Type:</label>
+              <select id="catway-type" name="type" required>
+                <option value="short">short</option>
+                <option value="long">long</option>
               </select>
+            </div>
+            <div class="form-group">
+              <label for="catway-state">État du catway:</label>
+              <input type="text" id="catway-state" name="catwayState" required>
             </div>
             <button type="submit" class="btn btn-success">Créer</button>
           </form>
@@ -103,18 +106,14 @@
 
         <div class="form-card">
           <h3>Modifier l'État d'un Catway</h3>
-          <form method="POST" action="/dashboard/catways/1" class="form">
+          <form method="POST" action="/dashboard/catways/update" class="form">
             <div class="form-group">
               <label for="update-catway-id">ID du Catway:</label>
-              <input type="number" id="update-catway-id" placeholder="ID" required>
+              <input type="number" id="update-catway-id" name="catwayNumber" placeholder="Numéro" min="1" required>
             </div>
             <div class="form-group">
               <label for="update-catway-status">Nouvel État:</label>
-              <select id="update-catway-status" name="status" required>
-                <option value="disponible">Disponible</option>
-                <option value="occupé">Occupé</option>
-                <option value="maintenance">Maintenance</option>
-              </select>
+              <input type="text" id="update-catway-status" name="catwayState" required>
             </div>
             <button type="submit" class="btn btn-warning">Modifier</button>
           </form>
@@ -122,10 +121,10 @@
 
         <div class="form-card">
           <h3>Supprimer un Catway</h3>
-          <form method="POST" action="/dashboard/catways/1/delete" class="form" onsubmit="return confirm('Êtes-vous sûr?');">
+          <form method="POST" action="/dashboard/catways/delete" class="form" onsubmit="return confirm('Êtes-vous sûr?');">
             <div class="form-group">
               <label for="delete-catway-id">ID du Catway:</label>
-              <input type="number" id="delete-catway-id" placeholder="ID" required>
+              <input type="number" id="delete-catway-id" name="catwayNumber" placeholder="Numéro" min="1" required>
             </div>
             <button type="submit" class="btn btn-danger">Supprimer</button>
           </form>
@@ -133,10 +132,10 @@
 
         <div class="form-card">
           <h3>Afficher les Détails d'un Catway</h3>
-          <form method="GET" action="/dashboard/catway/1" class="form">
+          <form method="GET" action="/dashboard/catway" class="form" onsubmit="event.target.action = '/dashboard/catway/' + encodeURIComponent(event.target.catwayNumber.value)">
             <div class="form-group">
               <label for="detail-catway-id">ID du Catway:</label>
-              <input type="number" id="detail-catway-id" placeholder="ID" required>
+              <input type="number" id="detail-catway-id" name="catwayNumber" placeholder="Numéro" min="1" required>
             </div>
             <button type="submit" class="btn btn-info">Afficher</button>
           </form>
@@ -150,24 +149,24 @@
           <h3>Créer une Réservation</h3>
           <form method="POST" action="/dashboard/reservations" class="form">
             <div class="form-group">
-              <label for="catway-id">ID du Catway:</label>
-              <input type="number" id="catway-id" name="catwayId" required>
+              <label for="catway-id">Numéro du Catway:</label>
+              <input type="number" id="catway-id" name="catwayNumber" min="1" required>
             </div>
             <div class="form-group">
               <label for="client-name">Nom du Client:</label>
               <input type="text" id="client-name" name="clientName" required>
             </div>
             <div class="form-group">
-              <label for="client-email">Email du Client:</label>
-              <input type="email" id="client-email" name="clientEmail" required>
+              <label for="boat-name">Nom du Bateau:</label>
+              <input type="text" id="boat-name" name="boatName" required>
             </div>
             <div class="form-group">
               <label for="start-date">Date de Début:</label>
-              <input type="date" id="start-date" name="startDate" required>
+              <input type="date" id="start-date" name="checkIn" required>
             </div>
             <div class="form-group">
               <label for="end-date">Date de Fin:</label>
-              <input type="date" id="end-date" name="endDate" required>
+              <input type="date" id="end-date" name="checkOut" required>
             </div>
             <button type="submit" class="btn btn-success">Créer</button>
           </form>
@@ -175,10 +174,14 @@
 
         <div class="form-card">
           <h3>Supprimer une Réservation</h3>
-          <form method="POST" action="/dashboard/reservations/1/delete" class="form" onsubmit="return confirm('Êtes-vous sûr?');">
+          <form method="POST" action="/dashboard/reservations/delete" class="form" onsubmit="return confirm('Êtes-vous sûr?');">
+            <div class="form-group">
+              <label for="delete-reservation-catway">Numéro du Catway:</label>
+              <input type="number" id="delete-reservation-catway" name="catwayNumber" placeholder="Numéro" min="1" required>
+            </div>
             <div class="form-group">
               <label for="delete-reservation-id">ID de la Réservation:</label>
-              <input type="number" id="delete-reservation-id" placeholder="ID" required>
+              <input type="number" id="delete-reservation-id" name="idReservation" placeholder="ID" min="1" required>
             </div>
             <button type="submit" class="btn btn-danger">Supprimer</button>
           </form>
@@ -186,10 +189,10 @@
 
         <div class="form-card">
           <h3>Afficher les Détails d'une Réservation</h3>
-          <form method="GET" action="/dashboard/reservation/1" class="form">
+          <form method="GET" action="/dashboard/reservation" class="form" onsubmit="event.target.action = '/dashboard/reservation/' + encodeURIComponent(event.target.idReservation.value)">
             <div class="form-group">
               <label for="detail-reservation-id">ID de la Réservation:</label>
-              <input type="number" id="detail-reservation-id" placeholder="ID" required>
+              <input type="number" id="detail-reservation-id" name="idReservation" placeholder="ID" min="1" required>
             </div>
             <button type="submit" class="btn btn-info">Afficher</button>
           </form>

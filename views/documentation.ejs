@@ -86,9 +86,9 @@
       <p><strong>Réponse:</strong></p>
       <pre><code>[
   {
-    "id": 1,
-    "number": "A1",
-    "status": "disponible",
+    "catwayNumber": 1,
+    "type": "short",
+    "catwayState": "bon état",
     "createdAt": "2026-01-24T10:00:00Z",
     "updatedAt": "2026-01-24T10:00:00Z"
   }
@@ -101,17 +101,25 @@
       <p>Crée un nouveau catway.</p>
       <p><strong>Paramètres:</strong></p>
       <pre><code>{
-  "number": "A1",
-  "status": "disponible"
+  "catwayNumber": 36,
+  "type": "short",
+  "catwayState": "bon état"
 }</code></pre>
 
       <h3>PUT /catways/:id</h3>
-      <p>Modifie l'état d'un catway.</p>
+      <p>Remplace complètement un catway (type + état).</p>
       <p><strong>Paramètres:</strong></p>
       <pre><code>{
-  "status": "occupé"
+  "type": "long",
+  "catwayState": "en maintenance"
 }</code></pre>
-      <p><strong>États valides:</strong> disponible, occupé, maintenance</p>
+
+      <h3>PATCH /catways/:id</h3>
+      <p>Met à jour partiellement un catway (ex: uniquement <code>catwayState</code>).</p>
+      <p><strong>Paramètres:</strong></p>
+      <pre><code>{
+  "catwayState": "2 planches bougent"
+}</code></pre>
 
       <h3>DELETE /catways/:id</h3>
       <p>Supprime un catway.</p>
@@ -125,33 +133,41 @@
       <p><strong>Réponse:</strong></p>
       <pre><code>[
   {
-    "id": 1,
-    "catwayId": 1,
+    "idReservation": 1,
+    "catwayNumber": 1,
     "clientName": "Jean Dupont",
-    "clientEmail": "jean@example.com",
-    "startDate": "2026-02-01T00:00:00Z",
-    "endDate": "2026-02-07T00:00:00Z",
+    "boatName": "Carolina",
+    "checkIn": "2026-02-01T00:00:00Z",
+    "checkOut": "2026-02-07T00:00:00Z",
     "createdAt": "2026-01-24T10:00:00Z",
     "updatedAt": "2026-01-24T10:00:00Z"
   }
 ]</code></pre>
 
-      <h3>GET /reservations/:id</h3>
+      <h3>GET /reservations/:idReservation</h3>
       <p>Récupère les détails d'une réservation spécifique.</p>
 
-      <h3>POST /reservations</h3>
-      <p>Crée une nouvelle réservation.</p>
+      <h3>GET /catways/:id/reservations</h3>
+      <p>Récupère toutes les réservations d'un catway.</p>
+
+      <h3>GET /catways/:id/reservations/:idReservation</h3>
+      <p>Récupère le détail d'une réservation d'un catway.</p>
+
+      <h3>POST /catways/:id/reservations</h3>
+      <p>Crée une nouvelle réservation pour le catway ciblé.</p>
       <p><strong>Paramètres:</strong></p>
       <pre><code>{
-  "catwayId": 1,
   "clientName": "Jean Dupont",
-  "clientEmail": "jean@example.com",
-  "startDate": "2026-02-01",
-  "endDate": "2026-02-07"
+  "boatName": "Carolina",
+  "checkIn": "2026-02-01",
+  "checkOut": "2026-02-07"
 }</code></pre>
 
-      <h3>DELETE /reservations/:id</h3>
-      <p>Supprime une réservation.</p>
+      <h3>DELETE /catways/:id/reservations/:idReservation</h3>
+      <p>Supprime une réservation d'un catway.</p>
+
+      <h3>DELETE /reservations/:idReservation</h3>
+      <p>Supprime une réservation par son identifiant global.</p>
     </div>
 
     <div class="doc-section">

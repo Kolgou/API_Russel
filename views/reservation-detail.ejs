@@ -25,32 +25,32 @@
   </nav>
 
   <div class="container">
-    <h1>Détails de la Réservation #<%= reservation.id %></h1>
+    <h1>Détails de la Réservation #<%= reservation.idReservation %></h1>
 
     <div class="detail-card">
       <div class="detail-row">
         <label>ID:</label>
-        <value><%= reservation.id %></value>
+        <value><%= reservation.idReservation %></value>
       </div>
       <div class="detail-row">
-        <label>ID du Catway:</label>
-        <value><a href="/catways/<%= reservation.catwayId %>"><%= reservation.catwayId %></a></value>
+        <label>Numéro du Catway:</label>
+        <value><a href="/catways/<%= reservation.catwayNumber %>"><%= reservation.catwayNumber %></a></value>
       </div>
       <div class="detail-row">
         <label>Nom du Client:</label>
         <value><%= reservation.clientName %></value>
       </div>
       <div class="detail-row">
-        <label>Email du Client:</label>
-        <value><%= reservation.clientEmail %></value>
+        <label>Nom du Bateau:</label>
+        <value><%= reservation.boatName %></value>
       </div>
       <div class="detail-row">
         <label>Date de Début:</label>
-        <value><%= new Date(reservation.startDate).toLocaleString('fr-FR') %></value>
+        <value><%= new Date(reservation.checkIn).toLocaleString('fr-FR') %></value>
       </div>
       <div class="detail-row">
         <label>Date de Fin:</label>
-        <value><%= new Date(reservation.endDate).toLocaleString('fr-FR') %></value>
+        <value><%= new Date(reservation.checkOut).toLocaleString('fr-FR') %></value>
       </div>
       <% if (reservation.createdAt) { %>
         <div class="detail-row">
